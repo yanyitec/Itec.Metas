@@ -5,16 +5,16 @@ using System.Text;
 
 namespace Itec.Metas
 {
-    public class Class<T> : MetaClass,IEnumerable<Property<T>>
+    public class MetaClass<T> : MetaClass,IEnumerable<MetaProperty<T>>
         //where T : class
     {
-        public Class() : base(typeof(T)) {
+        public MetaClass() : base(typeof(T)) {
             
         }
         
-        public new Property<T> this[string name] {
+        public new MetaProperty<T> this[string name] {
             get {
-                return base[name] as Property<T>;
+                return base[name] as MetaProperty<T>;
             }
         }
 
@@ -35,15 +35,15 @@ namespace Itec.Metas
 
         protected override MetaProperty CreateProperty(MemberInfo memberInfo)
         {
-            return new Property<T>(memberInfo,this);
+            return new MetaProperty<T>(memberInfo,this);
         }
         protected override MetaMethod CreateMethod(MethodInfo methodInfo)
         {
-            return new Method<T>(methodInfo, this);
+            return new MetaMethod<T>(methodInfo, this);
         }
-        IEnumerator<Property<T>> IEnumerable<Property<T>>.GetEnumerator()
+        IEnumerator<MetaProperty<T>> IEnumerable<MetaProperty<T>>.GetEnumerator()
         {
-            return new Itec.ConvertEnumerator<Property<T>,MetaProperty>(this.Props.Values.GetEnumerator(),(src)=>(Property<T>)src);
+            return new Itec.ConvertEnumerator<MetaProperty<T>,MetaProperty>(this.Props.Values.GetEnumerator(),(src)=>(MetaProperty<T>)src);
         }
     }
 }

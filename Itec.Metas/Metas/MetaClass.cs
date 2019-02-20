@@ -15,7 +15,8 @@ namespace Itec.Metas
         }
         void Init() {
             this._Props = new Dictionary<string, MetaProperty>();
-            this._Methods = new Dictionary<string, Methods>();
+            this._Methods = new Dictionary<string, MetaMethods>();
+            this._PropNames = new List<string>();
             var members = this.Type.GetMembers();
             
             foreach (var member in members) {
@@ -23,15 +24,19 @@ namespace Itec.Metas
                 if (member.MemberType == MemberTypes.Field || member.MemberType == MemberTypes.Property)
                 {
                     var prop = this.CreateProperty(member);
-                    if(prop!=null)this._Props.Add(prop.Name, prop);
+                    if (prop != null)
+                    {
+                        this._Props.Add(prop.Name, prop);
+                        this._PropNames.Add(prop.Name);
+                    }
                 }
                 else if (member.MemberType == MemberTypes.Method) {
                     
                     var method = this.CreateMethod(member as MethodInfo);
                     if (method != null) {
-                        Methods ms = null;
+                        MetaMethods ms = null;
                         if (!this._Methods.TryGetValue(member.Name, out ms)) {
-                            ms = new Methods(this);
+                            ms = new MetaMethods(this);
                             _Methods.Add(member.Name,ms);
                         }
                         ms.Add(method);
@@ -54,6 +59,23 @@ namespace Itec.Metas
         }
 
         Dictionary<string, MetaProperty> _Props;
+
+        List<string> _PropNames;
+        public IReadOnlyList<string> PropNames {
+            get {
+                if (_PropNames == null)
+                {
+                    lock (this)
+                    {
+                        if (_PropNames == null)
+                        {
+                            this.Init();
+                        }
+                    }
+                }
+                return _PropNames;
+            }
+        }
 
         protected IReadOnlyDictionary<string, MetaProperty> Props {
             get {
@@ -96,9 +118,9 @@ namespace Itec.Metas
             }
         }
 
-        Dictionary<string, Methods> _Methods;
+        Dictionary<string, MetaMethods> _Methods;
 
-        public Methods GetMethods(string name) {
+        public MetaMethods GetMethods(string name) {
             if (_Methods == null) {
                 lock (this) {
                     if (_Methods == null) {
@@ -106,12 +128,12 @@ namespace Itec.Metas
                     }
                 }
             }
-            Methods result = null;
+            MetaMethods result = null;
             _Methods.TryGetValue(name,out result);
             return result;
         }
 
-        public IEnumerable<Methods> AsMethodsEnumerable() {
+        public IEnumerable<MetaMethods> AsMethodsEnumerable() {
             return this._Methods.Values;
         }
 

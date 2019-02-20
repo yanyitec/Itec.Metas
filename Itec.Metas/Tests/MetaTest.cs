@@ -191,7 +191,7 @@ namespace Itec.Metas.Tests
                 Name = "yy"
             };
             var fields = typeof(User).GetFields();
-            var propId = new Property<User>(fields.First(p => p.Name == "Id"));
+            var propId = new MetaProperty<User>(fields.First(p => p.Name == "Id"));
             var id = propId.GetValue(user);
             Console.WriteLine("Get Id Value:" + id);
 

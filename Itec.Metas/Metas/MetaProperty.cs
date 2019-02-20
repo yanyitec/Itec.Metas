@@ -47,7 +47,7 @@ namespace Itec.Metas
             _nullable = this.PropertyType.FullName.StartsWith("System.Nullable`1");
             if (_nullable == false) _NonullableType = _PropertyType;
             else _NonullableType = _PropertyType.GetGenericArguments()[0];
-
+            _nullChecker = CheckNull.GetChecker(_PropertyType);
         }
         bool? _nullable;
         public bool Nullable {
@@ -100,20 +100,7 @@ namespace Itec.Metas
         Func<object, bool> _nullChecker;
 
         public bool HasValue(object instance) {
-            if (_nullChecker == null) {
-                lock (this) {
-                    if (_nullChecker == null) {
-                        if (this.Nullable) {
-                            var valExpr = Expression.Parameter(typeof(object),"val");
-                            var expr = Expression.Property(Expression.Convert(valExpr,this.PropertyType),"HasValue");
-                            var lamda = Expression.Lambda<Func<object, bool>>(expr, valExpr);
-                            _nullChecker = lamda.Compile();
-                        } else {
-                            _nullChecker = (val) => val == null;
-                        }
-                    }
-                }
-            }
+            
             return !_nullChecker(this.GetValue(instance));
 
         }
@@ -166,7 +153,42 @@ namespace Itec.Metas
             return this.Attributes.FirstOrDefault(p=>p.GetType()==typeof(T)) as T;
         }
 
-        
+        Dictionary<string, IValidation> _Validations;
+
+        protected IDictionary<string, IValidation> Validations {
+            get {
+                if (_Validations == null) {
+                    lock (this) {
+                        if (_Validations == null) {
+                            _Validations = new Dictionary<string, IValidation>();
+                            var attrs = this.MemberInfo.GetCustomAttributes();
+                            foreach (Attribute attr in attrs) {
+                                var valid = attr as IValidation;
+                                if (valid != null) _Validations.TryAdd(valid.Name, valid);
+                            }
+                        }
+                    }
+                }
+                return _Validations;
+            }
+        }
+
+        public ValidationResult Validate(object target,ValidateOptions opts = ValidateOptions.Undefined) {
+            var value = this.GetValue(target);
+            foreach (var valid in this.Validations.Values) {
+                if (valid.Name == "Required")
+                {
+                    if (opts.HasFlag(ValidateOptions.IgnoreRequire)) continue;
+                    if (value == null || (opts.HasFlag(ValidateOptions.DefaultAsNull) && value.Equals(this.DefaultValue)))
+                        return new ValidationResult(valid,"Required");
+                }
+                var errorCode = valid.Check(value);
+                if (!string.IsNullOrEmpty(errorCode)) return new ValidationResult(valid,errorCode);
+            }
+            return null;
+        }
+
+
 
 
 

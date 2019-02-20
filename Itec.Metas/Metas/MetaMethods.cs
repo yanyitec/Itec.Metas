@@ -7,10 +7,10 @@ using System.Text;
 
 namespace Itec.Metas
 {
-    public class Methods:IEnumerable<MetaMethod>
+    public class MetaMethods:IEnumerable<MetaMethod>
     {
         public List<MetaMethod> _List;
-        public Methods(MetaClass cls,MethodInfo info=null) {
+        public MetaMethods(MetaClass cls,MethodInfo info=null) {
             this.Class = cls;
             this._List = new List<MetaMethod>();
             if (info != null) this._List.Add(new MetaMethod(info,cls));
@@ -21,7 +21,7 @@ namespace Itec.Metas
             this._List.Add(m);
         }
 
-        public object Call(object instance, IValueProvider provider)
+        public object Call(object instance, IDataProvider provider)
         {
             var method = this._List.First();
             return method.Call(instance,provider);

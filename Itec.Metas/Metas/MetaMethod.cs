@@ -68,9 +68,9 @@ namespace Itec.Metas
 
         public Type ReturnType { get { return this.MethodInfo.ReturnType; } }
 
-        Func<object,IValueProvider, object> _DoCall;
+        Func<object,IDataProvider, object> _DoCall;
 
-        public object Call(object instance,IValueProvider valueProvider) {
+        public object Call(object instance,IDataProvider valueProvider) {
             if (_DoCall == null) {
                 lock (this) {
                     if (_DoCall == null) _DoCall = MakeCall<object>(this);
@@ -81,14 +81,14 @@ namespace Itec.Metas
         }
 
         #region Call
-        static MethodInfo GetMethod = typeof(IValueProvider).GetMethod("Get", 1, new Type[] { typeof(string) });
+        static MethodInfo GetMethod = typeof(IDataProvider).GetMethod("Get", 1, new Type[] { typeof(string) });
         static Type NullableType = typeof(Itec.Noneable<>);
 
-        protected static Func<T, IValueProvider, object> MakeCall<T>(MetaMethod method)
+        protected static Func<T, IDataProvider, object> MakeCall<T>(MetaMethod method)
         {
             var instanceExpr = Expression.Parameter(typeof(T), "instance");
-            var providerExpr = Expression.Parameter(typeof(IValueProvider), "valueProvider");
-            var lamda = Expression.Lambda<Func<T, IValueProvider, object>>(MakeCall(method, instanceExpr, providerExpr), instanceExpr, providerExpr);
+            var providerExpr = Expression.Parameter(typeof(IDataProvider), "valueProvider");
+            var lamda = Expression.Lambda<Func<T, IDataProvider, object>>(MakeCall(method, instanceExpr, providerExpr), instanceExpr, providerExpr);
             return lamda.Compile();
         }
         protected static Expression MakeCall(MetaMethod method,ParameterExpression instanceExpr, ParameterExpression valueProviderExpr) {

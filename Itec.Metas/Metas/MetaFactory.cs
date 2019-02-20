@@ -14,7 +14,7 @@ namespace Itec.Metas
         }
         public MetaClass GetClass(Type type) {
             return _Classes.GetOrAdd(type.GUID,(k)=> {
-                var t = typeof(Class<>).MakeGenericType(type);
+                var t = typeof(MetaClass<>).MakeGenericType(type);
                 return Activator.CreateInstance(t, type) as MetaClass;
             });
         }

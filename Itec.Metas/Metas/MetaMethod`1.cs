@@ -6,15 +6,15 @@ using System.Text;
 
 namespace Itec.Metas
 {
-    public class Method<T>:MetaMethod
+    public class MetaMethod<T>:MetaMethod
     {
-        public Method(MethodInfo method, Class<T> cls) : base(method, cls) {
+        public MetaMethod(MethodInfo method, MetaClass<T> cls) : base(method, cls) {
 
         }
 
-        Func<T,IValueProvider, object> _DoCall;
+        Func<T,IDataProvider, object> _DoCall;
 
-        public object Call(T instance,IValueProvider valueProvider)
+        public object Call(T instance,IDataProvider valueProvider)
         {
             if (_DoCall == null)
             {
